@@ -1,10 +1,8 @@
 package xyz.stankovic.lifxcontrol;
 
-import ch.viascom.groundwork.restclient.exception.RESTClientException;
 import com.diogonunes.jcdp.color.ColoredPrinter;
 import com.diogonunes.jcdp.color.api.Ansi.*;
 
-import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -13,7 +11,7 @@ import java.util.Scanner;
  */
 public class Main {
 
-    public static void main(String[] args) throws IOException, RESTClientException {
+    public static void main(String[] args) throws Exception {
 
         ColoredPrinter cp = new ColoredPrinter.Builder(1, false)
                 .background(BColor.NONE)
@@ -71,7 +69,7 @@ public class Main {
 
     }
 
-    private static void runFader(int duration) throws RESTClientException {
+    private static void runFader(int duration) throws Exception {
         new Fader().start(duration);
     }
 }

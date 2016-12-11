@@ -1,10 +1,8 @@
 package xyz.stankovic.lifxcontrol;
 
-import ch.viascom.groundwork.restclient.exception.RESTClientException;
-import org.apache.http.impl.client.HttpClientBuilder;
 import xyz.stankovic.lifxcontrol.api.LifxAPI;
-import xyz.stankovic.lifxcontrol.request.models.Power;
-import xyz.stankovic.lifxcontrol.request.models.SetState;
+import xyz.stankovic.lifxcontrol.models.Power;
+import xyz.stankovic.lifxcontrol.models.SetState;
 
 import java.util.ArrayList;
 
@@ -15,12 +13,11 @@ public class Fader {
 
     private static ArrayList<SetState> setStateModels;
 
-    public void start(int minutes) throws RESTClientException {
+    public void start(int minutes) throws Exception {
 
         LifxAPI lifxAPI = new LifxAPI(
-                "PUT HERE YOUR APP TOKEN",
-                "https://api.lifx.com/v1/lights",
-                HttpClientBuilder.create().build()
+                "cd8f6a2936a618b10dc745286d5a78cd1ed7ef611672f926a82a0b98499a35cb",
+                "https://api.lifx.com/v1/lights"
         );
 
         initSetStateModels(minutes);

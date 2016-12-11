@@ -1,4 +1,4 @@
-package xyz.stankovic.lifxcontrol.request.models;
+package xyz.stankovic.lifxcontrol.models;
 
 import com.google.gson.annotations.SerializedName;
 

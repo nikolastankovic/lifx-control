@@ -1,47 +1,80 @@
 package xyz.stankovic.lifxcontrol.api;
 
-import ch.viascom.groundwork.restclient.exception.RESTClientException;
-import ch.viascom.groundwork.restclient.response.NoContentResponse;
-import lombok.AllArgsConstructor;
+import ch.viascom.groundwork.foxhttp.FoxHttpClient;
+import ch.viascom.groundwork.foxhttp.authorization.BearerTokenAuthorization;
+import ch.viascom.groundwork.foxhttp.authorization.FoxHttpAuthorizationScope;
+import ch.viascom.groundwork.foxhttp.body.request.RequestObjectBody;
+import ch.viascom.groundwork.foxhttp.body.request.RequestStringBody;
+import ch.viascom.groundwork.foxhttp.builder.FoxHttpRequestBuilder;
+import ch.viascom.groundwork.foxhttp.parser.GsonParser;
+import ch.viascom.groundwork.foxhttp.timeout.FoxHttpTimeoutStrategy;
+import ch.viascom.groundwork.foxhttp.type.ContentType;
+import ch.viascom.groundwork.foxhttp.type.RequestType;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.http.client.HttpClient;
-import xyz.stankovic.lifxcontrol.request.SetStateRequest;
-import xyz.stankovic.lifxcontrol.request.ToggleLightRequest;
-import xyz.stankovic.lifxcontrol.request.models.SetState;
+import xyz.stankovic.lifxcontrol.models.SetState;
 
 /**
  * Created by stankovic on 26.11.2016.
  */
 @Getter
 @Setter
-@AllArgsConstructor
 public class LifxAPI {
-    private String APP_TOKEN;
-    private String URL;
-    private HttpClient httpClient;
 
-    public NoContentResponse toggleLight(String selector, String duration) throws RESTClientException {
+    private final String appToken;
+    private final String url;
+    private final FoxHttpClient client;
 
-        ToggleLightRequest toggleLightRequest = new ToggleLightRequest(selector, duration, URL, httpClient, APP_TOKEN);
-        return toggleLightRequest.execute();
+    public LifxAPI(String appToken, String url){
+
+        this.appToken = appToken;
+        this.url = url;
+
+        FoxHttpTimeoutStrategy timeoutStrategy = new FoxHttpTimeoutStrategy() {
+            @Override
+            public int getConnectionTimeout() {
+                return 10_000;
+            }
+
+            @Override
+            public int getReadTimeout() {
+                return 300_000;
+            }
+        };
+
+        client = new FoxHttpClient();
+        client.getFoxHttpAuthorizationStrategy().addAuthorization(
+                FoxHttpAuthorizationScope.ANY,
+                new BearerTokenAuthorization(appToken)
+        );
+        client.setFoxHttpTimeoutStrategy(timeoutStrategy);
+        client.setFoxHttpRequestParser(new GsonParser());
+
     }
 
-    public NoContentResponse toggleLight() throws RESTClientException {
+    public void toggleLight(String selector, String duration) throws Exception {
 
-        ToggleLightRequest toggleLightRequest = new ToggleLightRequest(URL, httpClient, APP_TOKEN);
-        return toggleLightRequest.execute();
+        new FoxHttpRequestBuilder(url + "/" + selector + "/toggle", RequestType.POST, client)
+                .setRequestBody(new RequestStringBody("{\"duration\":\"" + duration + "\"}", ContentType.DEFAULT_JSON))
+                .setSkipResponseBody(false)
+                .build()
+                .execute();
     }
 
-    public NoContentResponse setState(SetState setStateModel) throws RESTClientException {
-
-        SetStateRequest setStateRequest = new SetStateRequest(setStateModel, URL, httpClient, APP_TOKEN);
-        return setStateRequest.execute();
+    public void toggleLight() throws Exception{
+       toggleLight("all", "1");
     }
 
-    public NoContentResponse setDefaultState() throws RESTClientException {
+    public void setState(SetState setStateModel) throws Exception {
 
-        SetStateRequest setStateRequest = new SetStateRequest(URL, httpClient, APP_TOKEN);
-        return setStateRequest.execute();
+        new FoxHttpRequestBuilder(url + "/" + setStateModel.getSelector() + "/state", RequestType.PUT, client)
+                .setRequestBody(new RequestObjectBody(setStateModel))
+                .setSkipResponseBody(true)
+                .build()
+                .execute();
+    }
+
+    public void setDefaultState() throws Exception {
+        setState(new SetState().setDefaults());
     }
 }

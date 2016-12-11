@@ -1,8 +1,10 @@
-package xyz.stankovic.lifxcontrol.request.models;
+package xyz.stankovic.lifxcontrol.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 /**
  * Created by stankovic on 26.11.2016.
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SetState {
+public class SetState implements Serializable {
     private String selector;
     private String duration;
     private String brightness;
